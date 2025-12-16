@@ -5,7 +5,6 @@ import java.util.Map;
 
 public class GrafoAEstrella {
 
-    // Lista de adyacencia con costos
     private Map<String, List<String>> vertices;
     private Map<String, Integer> costos;
     private Map<String, Integer> heuristica;
@@ -44,7 +43,7 @@ public class GrafoAEstrella {
 
         while (!abiertos.isEmpty()) {
 
-            // Elegir el nodo con menor f = g + h
+
             String actual = abiertos.get(0);
             for (String n : abiertos) {
                 int fActual = g.get(actual) + heuristica.get(actual);
@@ -53,6 +52,7 @@ public class GrafoAEstrella {
                     actual = n;
                 }
             }
+
 
             if (actual.equals(meta)) {
                 mostrarCamino(padre, inicio, meta);
@@ -65,39 +65,51 @@ public class GrafoAEstrella {
 
             for (String vecino : vertices.get(actual)) {
 
+                int nuevoG = g.get(actual) + costos.get(actual + vecino);
+
+
                 if (cerrados.contains(vecino)) {
+                    if (nuevoG < g.getOrDefault(vecino, Integer.MAX_VALUE)) {
+                        cerrados.remove(vecino);
+                        abiertos.add(vecino);
+                        padre.put(vecino, actual);
+                        g.put(vecino, nuevoG);
+                    }
                     continue;
                 }
 
-                int nuevoG = g.get(actual) + costos.get(actual + vecino);
 
                 if (!abiertos.contains(vecino)) {
                     abiertos.add(vecino);
                     padre.put(vecino, actual);
                     g.put(vecino, nuevoG);
+                } else {
+
+                    if (nuevoG < g.getOrDefault(vecino, Integer.MAX_VALUE)) {
+                        padre.put(vecino, actual);
+                        g.put(vecino, nuevoG);
+                    }
                 }
             }
         }
+
+        System.out.println("No se encontró camino.");
     }
 
     private void mostrarCamino(Map<String, String> padre, String inicio, String meta) {
-        System.out.println("Camino encontrado:");
+        System.out.println("Camino mas pequeño encontrado:");
 
         List<String> camino = new ArrayList<>();
         String actual = meta;
 
-        // Se arma el camino al revés (E->...->A)
         while (actual != null) {
             camino.add(actual);
             actual = padre.get(actual);
         }
 
-        // Se imprime al derecho (A->...->E)
         for (int i = camino.size() - 1; i >= 0; i--) {
             System.out.print(camino.get(i));
-            if (i != 0) {
-                System.out.print(" -> ");
-            }
+            if (i != 0) System.out.print(" -> ");
         }
         System.out.println();
     }
@@ -112,13 +124,12 @@ public class GrafoAEstrella {
         grafo.agregarVertice("D");
         grafo.agregarVertice("E");
 
-        grafo.agregarArista("A", "B", 1);
-        grafo.agregarArista("A", "C", 3);
-        grafo.agregarArista("B", "D", 1);
-        grafo.agregarArista("C", "D", 1);
+        grafo.agregarArista("A", "B", 5);
+        grafo.agregarArista("A", "C", 6);
+        grafo.agregarArista("B", "D", 7);
+        grafo.agregarArista("C", "D", 3);
         grafo.agregarArista("D", "E", 2);
 
-        // Heurística (estimación al destino E)
         grafo.agregarHeuristica("A", 4);
         grafo.agregarHeuristica("B", 3);
         grafo.agregarHeuristica("C", 2);
